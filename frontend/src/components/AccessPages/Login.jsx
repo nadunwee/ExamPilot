@@ -30,10 +30,18 @@ const Login = () => {
         formData
       );
 
+      const { email, token, name, user } = response.data;
+
+      console.log(email);
+
+      localStorage.setItem("userEmail", email);
+
       if (response.data) {
-        console.log("User logged in successfully:", response.data);
-        // Redirect to dashboard or homepage after successful login
-        navigate("/dashboard"); // Adjust this path as needed
+        if (user.type === "student") {
+          navigate("/exams");
+        } else if (user.type === "Administrator") {
+          navigate("/admin-exams");
+        }
       }
     } catch (err) {
       console.error("Login failed:", err.response?.data || err.message);
