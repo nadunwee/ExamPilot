@@ -13,7 +13,7 @@ app.use(bodyParser.json({ limit: "10mb" }));
 
 app.use(express.json());
 
-//Access to fetch at 'http://localhost:4000/register' from origin 'http://localhost:5173' has been blocked by CORS policy
+//Access to fetch at 'http://localhost:4000/api/register' from origin 'http://localhost:5173' has been blocked by CORS policy
 app.use(cors());
 
 app.use((req, res, next) => {
@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use(userRoutes);
+app.use("/api/user", userRoutes);
 
 //connect to db
 mongoose

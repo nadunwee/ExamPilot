@@ -1,31 +1,83 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "boxicons/css/boxicons.min.css";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
-  const handleNext = (e) => {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    name: "",
+    type: "student",
+    address: "",
+    NIC: "",
+    DOB: "",
+    contact_no: "",
+    student_id: "",
+  });
+
+  const [error, setError] = useState(""); // For error handling
+  const navigate = useNavigate(); // Initialize the navigate function
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleNext = async (e) => {
     e.preventDefault();
+
     if (!loading) {
+      if (step === 1) {
+        setStep(2); // Move to step 2
+        return;
+      }
+
+      // Handle final submission
       setLoading(true);
-      setTimeout(() => {
-        setStep(step + 1);
+      try {
+        const response = await axios.post(
+          "http://localhost:4000/api/user/register",
+          formData
+        );
+
+        console.log("User registered successfully:", response.data);
+
+        if (response.data) {
+          // Redirect to the login page if response contains data (success)
+          navigate("/log-in"); // Adjust the path if needed
+        }
+
         setLoading(false);
-      }, 300);
+      } catch (error) {
+        // Log the full error response for debugging
+        console.error(
+          "Registration failed:",
+          error.response?.data || error.message
+        );
+
+        // Display the error message to the user
+        const backendMessage =
+          error.response?.data?.message || "An unexpected error occurred.";
+
+        setError(backendMessage);
+
+        // Stop the loading spinner
+        setLoading(false);
+      }
     }
   };
 
-  // Animation variants for sliding
+  // Animation variants
   const slideVariants = {
     hidden: { x: "100%", opacity: 0 },
     visible: { x: 0, opacity: 1 },
     exit: { x: "-100%", opacity: 0 },
   };
 
-  // Animation variants for pop-up
   const popUpVariants = {
     hidden: { scale: 0.8, opacity: 0 },
     visible: { scale: 1, opacity: 1 },
@@ -59,18 +111,12 @@ const Register = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            variants={step === 1 ? slideVariants : popUpVariants} // Use different animation based on the step
+            variants={step === 1 ? slideVariants : popUpVariants}
             transition={{ duration: 0.5 }}
           >
             <form onSubmit={handleNext}>
               {step === 1 && (
-                <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  variants={slideVariants}
-                  transition={{ duration: 0.5 }}
-                >
+                <>
                   <div className="flex items-center gap-4 justify-center">
                     <i className="bx bx-user text-[28px] border-2 rounded-[30px] p-1"></i>
                     <p className="text-black font-medium flex justify-center">
@@ -92,6 +138,9 @@ const Register = () => {
                       id="email"
                       type="email"
                       name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
                     />
                   </div>
                   <div className="flex flex-col text-left mb-4">
@@ -106,22 +155,16 @@ const Register = () => {
                       id="password"
                       type="password"
                       name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
                     />
                   </div>
-                </motion.div>
+                </>
               )}
 
               {step === 2 && (
-                <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  variants={popUpVariants}
-                  transition={{ duration: 0.5 }}
-                >
-                  <p className="mb-5 text-black font-medium flex justify-center">
-                    More Details
-                  </p>
+                <>
                   <div className="flex flex-col text-left mb-4">
                     <label
                       className="mb-1 text-black text-xs font-semibold"
@@ -134,6 +177,9 @@ const Register = () => {
                       id="name"
                       type="text"
                       name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
                     />
                   </div>
                   <div className="flex flex-col text-left mb-4">
@@ -148,24 +194,80 @@ const Register = () => {
                       id="address"
                       type="text"
                       name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      required
                     />
                   </div>
-                  <div className="flex flex-col text-left">
+                  <div className="flex flex-col text-left mb-4">
                     <label
                       className="mb-1 text-black text-xs font-semibold"
-                      htmlFor="nic"
+                      htmlFor="NIC"
                     >
                       NIC <span className="text-red-600">*</span>
                     </label>
                     <input
                       className="rounded-md py-2 pl-8 w-80 text-xs text-black bg-white border border-grey-800 focus:outline-none focus:border-[#152DFF]"
-                      id="nic"
+                      id="NIC"
                       type="text"
-                      name="nic"
+                      name="NIC"
+                      value={formData.NIC}
+                      onChange={handleChange}
+                      required
                     />
                   </div>
-                </motion.div>
+                  <div className="flex flex-col text-left mb-4">
+                    <label
+                      className="mb-1 text-black text-xs font-semibold"
+                      htmlFor="DOB"
+                    >
+                      Date of Birth
+                    </label>
+                    <input
+                      className="rounded-md py-2 pl-8 w-80 text-xs text-black bg-white border border-grey-800 focus:outline-none focus:border-[#152DFF]"
+                      id="DOB"
+                      type="date"
+                      name="DOB"
+                      value={formData.DOB}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="flex flex-col text-left mb-4">
+                    <label
+                      className="mb-1 text-black text-xs font-semibold"
+                      htmlFor="contact_no"
+                    >
+                      Contact Number
+                    </label>
+                    <input
+                      className="rounded-md py-2 pl-8 w-80 text-xs text-black bg-white border border-grey-800 focus:outline-none focus:border-[#152DFF]"
+                      id="contact_no"
+                      type="text"
+                      name="contact_no"
+                      value={formData.contact_no}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <label
+                      className="mb-1 text-black text-xs font-semibold"
+                      htmlFor="student_id"
+                    >
+                      Student ID
+                    </label>
+                    <input
+                      className="rounded-md py-2 pl-8 w-80 text-xs text-black bg-white border border-grey-800 focus:outline-none focus:border-[#152DFF]"
+                      id="student_id"
+                      type="text"
+                      name="student_id"
+                      value={formData.student_id}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </>
               )}
+
+              {error && <p className="text-red-600 text-xs mt-2">{error}</p>}
 
               <button
                 className="w-full mt-6 border border-examPilotBlue p-2 rounded-[20px] hover:bg-examPilotBlue hover:text-white"

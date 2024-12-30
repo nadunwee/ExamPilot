@@ -22,7 +22,7 @@ const userSchema = new Schema({
     require: true,
   },
   DOB: {
-    type: Date,
+    type: String,
     require: true,
   },
   contact_no: {
@@ -40,7 +40,16 @@ const userSchema = new Schema({
 });
 
 // static register method
-userSchema.statics.register = async function (name, email, password) {
+userSchema.statics.register = async function (
+  name,
+  email,
+  password,
+  type,
+  DOB,
+  contact_no,
+  student_id,
+  NIC
+) {
   // validation
   if (!email || !password || !name) {
     throw Error("All fields must be filled");
@@ -48,9 +57,11 @@ userSchema.statics.register = async function (name, email, password) {
   if (!validator.isEmail(email)) {
     throw Error("Email is not valid");
   }
-  if (!validator.isStrongPassword(password)) {
-    throw error("Password is not strong enough");
-  }
+  // if (!validator.isStrongPassword(password)) {
+  //   throw error("Password is not strong enough");
+  // }
+
+  console.log(email, password, name, type, DOB, contact_no, student_id, NIC);
 
   const exists = await this.findOne({ email });
   if (exists) {
@@ -61,10 +72,39 @@ userSchema.statics.register = async function (name, email, password) {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
-    const user = await this.create({ name, email, password: hash });
+    const user = await this.create({
+      name,
+      email,
+      password: hash,
+      type,
+      DOB,
+      contact_no,
+      student_id,
+      NIC,
+    });
 
     return user;
   }
+};
+
+// static login method
+userSchema.statics.login = async function (email, password) {
+  if (!email || !password) {
+    throw Error("All fields must be filled");
+  }
+
+  const user = await this.findOne({ email });
+
+  if (!user) {
+    throw Error("Incorrect Email");
+  }
+
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
+    throw Error("Incorrect Password");
+  }
+
+  return user;
 };
 
 module.exports = mongoose.model("User", userSchema);
