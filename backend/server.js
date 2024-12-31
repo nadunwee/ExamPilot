@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const userRoutes = require("./routes/user");
+const examRoutes = require("./routes/exam");
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use("/api/user", userRoutes);
+app.use("/api/exam", examRoutes);
 
 //connect to db
 mongoose

@@ -1,22 +1,72 @@
-import React, { useState } from "react";
-import AddExamModel from "./AddExamModel";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AddExamModel from "./AddExamModel";
 
 const AdminExams = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [exams, setExams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+  const handleOpenModal = (exam = null) => {
+    setSelectedExam(exam); // Pass exam data if editing, or null for adding
+    setIsModalOpen(true);
+  };
+  const handleCloseModal = () => {
+    setSelectedExam(null);
+    setIsModalOpen(false);
+  };
 
-  const handleLogout = () => {
-    localStorage.removeItem("userEmail");
-    navigate("/log-in");
+  const fetchExams = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/api/exam/get-exams"
+      );
+      setExams(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.response?.data?.error || "An error occurred");
+      setLoading(false);
+    }
+  };
+
+  const handleAddOrUpdateExam = (updatedExam) => {
+    setExams((prevExams) => {
+      const index = prevExams.findIndex((exam) => exam._id === updatedExam._id);
+      if (index !== -1) {
+        // Update existing exam
+        const newExams = [...prevExams];
+        newExams[index] = updatedExam;
+        return newExams;
+      }
+      // Add new exam
+      return [updatedExam, ...prevExams];
+    });
+  };
+
+  useEffect(() => {
+    fetchExams();
+  }, []);
+
+  const deleteExam = async (id) => {
+    try {
+      await axios.delete(
+        `http://localhost:4000/api/exam/delete-exam?name=${encodeURIComponent(
+          id
+        )}`
+      );
+      alert("Exam deleted successfully!");
+      setExams((prevExams) => prevExams.filter((exam) => exam.id !== id));
+    } catch (err) {
+      setError(err.response?.data?.error || "An error occurred");
+    }
   };
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
       <aside className="w-[300px] bg-gray-100 p-6 flex flex-col h-full">
         <h1 className="text-[35px] font-bold text-blue-800">Exam Pilot</h1>
         <nav className="mt-8">
@@ -36,70 +86,70 @@ const AdminExams = () => {
         <div className="flex-grow"></div>
         <button
           className="bg-red-600 text-white w-full py-2 px-4 rounded hover:bg-red-700 transition-colors"
-          onClick={handleLogout}
+          onClick={() => {
+            localStorage.removeItem("userEmail");
+            navigate("/log-in");
+          }}
         >
           Log Out
         </button>
       </aside>
 
-      {/* Main Content */}
       <main className="w-full bg-white p-6">
         <header className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">Exams</h2>
           <button
-            onClick={handleOpenModal}
+            onClick={() => handleOpenModal()}
             className="bg-blue-800 text-white py-2 px-4 rounded"
           >
             + add new exam
           </button>
         </header>
 
-        {/* Modal */}
-        {isModalOpen && <AddExamModel handleCloseModal={handleCloseModal} />}
+        {isModalOpen && (
+          <AddExamModel
+            handleCloseModal={handleCloseModal}
+            onExamAdded={handleAddOrUpdateExam}
+            selectedExam={selectedExam}
+          />
+        )}
 
-        {/* Filters */}
         <section className="mt-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-sm font-semibold">course Categories</h3>
-              <div className="flex space-x-2 mt-2">
-                <div className="bg-gray-200 rounded h-8 w-24"></div>
-                <div className="bg-gray-200 rounded h-8 w-24"></div>
-                <div className="bg-gray-200 rounded h-8 w-24"></div>
-                <div className="bg-gray-200 rounded h-8 w-24"></div>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">search Courses</h3>
-              <div className="bg-gray-200 rounded h-8 w-48 mt-2"></div>
-            </div>
-          </div>
-        </section>
-
-        {/* Exams List */}
-        <section className="mt-6">
-          <ul>
-            {[1, 2, 3].map((exam) => (
-              <li
-                key={exam}
-                className="flex justify-between items-center border border-gray-300 rounded p-4 mb-4"
-              >
-                <div className="text-sm font-semibold">
-                  Internet and web technologies - IT2310
-                </div>
-                <div className="text-sm">Dr John</div>
-                <div className="text-sm">Web Dec 3 20:00</div>
-                <div className="flex space-x-2">
-                  <button className="bg-gray-100 p-2 rounded hover:bg-gray-200">
-                    ✏️
-                  </button>
-                  <button className="bg-gray-100 p-2 rounded hover:bg-gray-200">
-                    🗑️
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {loading ? (
+            <div>Loading exams...</div>
+          ) : exams.length === 0 ? (
+            <div>No exams found.</div>
+          ) : (
+            <ul>
+              {exams.map((exam) => (
+                <li
+                  key={exam._id}
+                  className="flex justify-between items-center border border-gray-300 rounded p-4 mb-4"
+                >
+                  <div className="text-sm font-semibold">{exam.name}</div>
+                  <div className="text-sm">{exam.assigned_lecturer}</div>
+                  <div className="text-sm">{exam.start_date}</div>
+                  <div className="text-sm">{exam.duration}</div>
+                  <div className="text-sm">{exam.module_code}</div>
+                  <div className="text-sm">{exam.semester}</div>
+                  <div className="flex space-x-2">
+                    <button
+                      className="bg-gray-100 p-2 rounded hover:bg-gray-200"
+                      onClick={() => handleOpenModal(exam)}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      className="bg-gray-100 p-2 rounded hover:bg-gray-200"
+                      onClick={() => deleteExam(exam.id)}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </main>
     </div>
