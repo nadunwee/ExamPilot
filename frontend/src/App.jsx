@@ -4,6 +4,7 @@ import Login from "./components/AccessPages/Login";
 import Register from "./components/AccessPages/Register";
 import ExamsPage from "./components/StudentPages/ExamsPage";
 import AdminExams from "./components/AdminPages/AdminExams";
+import AdminLecturers from "./components/AdminPages/AdminLecturers";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/exams" element={<ExamsPage />} />
         <Route path="/admin-exams" element={<AdminExams />} />
+        <Route path="/admin-lecturers" element={<AdminLecturers />} />
       </Routes>
     </Router>
   );

@@ -81,4 +81,44 @@ const getUserDetails = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getUserDetails };
+const getLecturers = async (req, res) => {
+  try {
+    const lecturers = await User.find({ type: "lecturer" });
+    res.status(200).json(lecturers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const updateLecturerDetails = async (req, res) => {
+  const { id } = req.params; // Extract lecturer ID from request parameters
+  const updates = req.body; // The fields to update are sent in the request body
+
+  try {
+    // Find the lecturer by ID and update their details
+    const updatedLecturer = await User.findByIdAndUpdate(
+      id,
+      updates,
+      { new: true, runValidators: true } // `new` returns the updated document, `runValidators` ensures schema validation
+    );
+
+    // If no lecturer is found, return an error
+    if (!updatedLecturer) {
+      return res.status(404).json({ error: "Lecturer not found" });
+    }
+
+    // Return the updated lecturer details
+    res.status(200).json(updatedLecturer);
+  } catch (error) {
+    // Handle any errors that occur during the update process
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getUserDetails,
+  getLecturers,
+  updateLecturerDetails,
+};

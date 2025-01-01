@@ -63,7 +63,7 @@ const AdminExams = () => {
 
   return (
     <div className="flex h-screen">
-      <aside className="w-[300px] bg-gray-100 p-6 flex flex-col h-full">
+      <aside className="w-[355px] bg-gray-100 p-6 flex flex-col h-full">
         <h1 className="text-[35px] font-bold text-blue-800">Exam Pilot</h1>
         <nav className="mt-8">
           <ul>
@@ -73,7 +73,10 @@ const AdminExams = () => {
               </button>
             </li>
             <li>
-              <button className="w-full text-left text-gray-700 py-2 px-4 rounded hover:bg-gray-200">
+              <button
+                className="w-full text-left text-gray-700 py-2 px-4 rounded hover:bg-gray-200"
+                onClick={() => navigate("/admin-lecturers")}
+              >
                 Lecturers
               </button>
             </li>
