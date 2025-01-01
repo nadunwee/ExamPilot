@@ -59,7 +59,7 @@ const AdminExams = () => {
         )}`
       );
       alert("Exam deleted successfully!");
-      setExams((prevExams) => prevExams.filter((exam) => exam.id !== id));
+      setExams((prevExams) => prevExams.filter((exam) => exam._id !== id));
     } catch (err) {
       setError(err.response?.data?.error || "An error occurred");
     }
@@ -141,7 +141,7 @@ const AdminExams = () => {
                     </button>
                     <button
                       className="bg-gray-100 p-2 rounded hover:bg-gray-200"
-                      onClick={() => deleteExam(exam.id)}
+                      onClick={() => deleteExam(exam._id)}
                     >
                       🗑️ Delete
                     </button>

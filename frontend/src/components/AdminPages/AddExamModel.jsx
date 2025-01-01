@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 const AddExamModel = ({ handleCloseModal, onExamAdded, selectedExam }) => {
   const [formData, setFormData] = useState(
     selectedExam || {
-      id: "",
       name: "",
       duration: "",
       module_code: "",
@@ -21,13 +20,12 @@ const AddExamModel = ({ handleCloseModal, onExamAdded, selectedExam }) => {
   // Format start_date if selectedExam is provided
   useEffect(() => {
     if (selectedExam) {
-      const formattedExam = {
+      setFormData({
         ...selectedExam,
         start_date: selectedExam.start_date
           ? new Date(selectedExam.start_date).toISOString().split("T")[0]
           : "",
-      };
-      setFormData(formattedExam);
+      });
     }
   }, [selectedExam]);
 
@@ -44,13 +42,13 @@ const AddExamModel = ({ handleCloseModal, onExamAdded, selectedExam }) => {
         ? `http://localhost:4000/api/exam/update-exam/${selectedExam._id}`
         : "http://localhost:4000/api/exam/create-exam";
       const method = selectedExam ? "put" : "post";
-      const response = await axios[method](url, formData);
+      const { data } = await axios[method](url, formData);
 
       alert(`Exam ${selectedExam ? "updated" : "created"} successfully!`);
-      onExamAdded(response.data.exam);
+      onExamAdded(data.exam);
       handleCloseModal();
     } catch (error) {
-      console.error(error);
+      console.error("Error saving exam:", error.response?.data || error);
       alert(
         error.response?.data?.error ||
           "An error occurred while saving the exam."
@@ -65,21 +63,23 @@ const AddExamModel = ({ handleCloseModal, onExamAdded, selectedExam }) => {
           {selectedExam ? "Edit Exam" : "Add a New Exam"}
         </h3>
         <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
-          {Object.keys(formData).map((key) => (
-            <div key={key}>
-              <label className="block text-sm font-medium mb-1">
-                {key.replace(/_/g, " ").toUpperCase()}
-              </label>
-              <input
-                type={key === "start_date" ? "date" : "text"}
-                name={key}
-                value={formData[key]}
-                onChange={handleInputChange}
-                className="w-full border rounded p-2"
-                placeholder={`Enter ${key.replace(/_/g, " ")}`}
-              />
-            </div>
-          ))}
+          {Object.keys(formData)
+            .filter((key) => key !== "__v") // Exclude __v
+            .map((key) => (
+              <div key={key}>
+                <label className="block text-sm font-medium mb-1">
+                  {key.replace(/_/g, " ").toUpperCase()}
+                </label>
+                <input
+                  type={key === "start_date" ? "date" : "text"}
+                  name={key}
+                  value={formData[key]}
+                  onChange={handleInputChange}
+                  className="w-full border rounded p-2"
+                  placeholder={`Enter ${key.replace(/_/g, " ")}`}
+                />
+              </div>
+            ))}
         </form>
         <div className="flex justify-end mt-4">
           <button

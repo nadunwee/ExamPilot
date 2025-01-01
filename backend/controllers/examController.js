@@ -1,5 +1,6 @@
 const Exam = require("../models/ExamModel");
 
+// Create a new exam
 const createExam = async (req, res) => {
   const {
     name,
@@ -31,7 +32,6 @@ const createExam = async (req, res) => {
   }
 
   try {
-    // Create a new exam document
     const exam = await Exam.create({
       name,
       duration,
@@ -47,21 +47,29 @@ const createExam = async (req, res) => {
 
     res.status(201).json({ message: "Exam created successfully", exam });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error creating exam:", error);
+    res.status(500).json({ error: "Failed to create exam" });
   }
 };
 
+// Get all exams
 const getExams = async (req, res) => {
   try {
-    const exams = await Exam.find(); // Fetch all exams from the database
-    res.status(200).json(exams); // Send the exams as a JSON response
+    const exams = await Exam.find();
+    res.status(200).json(exams);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Handle errors
+    console.error("Error fetching exams:", error);
+    res.status(500).json({ error: "Failed to fetch exams" });
   }
 };
 
+// Delete an exam
 const deleteExam = async (req, res) => {
-  const { id } = req.query; // Access query parameters
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ error: "Exam ID is required" });
+  }
 
   try {
     const deletedExam = await Exam.findOneAndDelete({ id });
@@ -70,19 +78,24 @@ const deleteExam = async (req, res) => {
     }
     res.status(200).json({ message: "Exam deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error deleting exam:", error);
+    res.status(500).json({ error: "Failed to delete exam" });
   }
 };
 
+// Update an exam
 const updateExam = async (req, res) => {
-  const { id } = req.params; // Access the exam ID from the URL
-  const updates = req.body; // Data to update
+  const { id } = req.params;
+  const updates = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "Exam ID is required" });
+  }
 
   try {
-    // Find the exam by ID and update it
     const updatedExam = await Exam.findByIdAndUpdate(id, updates, {
-      new: true, // Return the updated document
-      runValidators: true, // Ensure the updates follow the schema validation rules
+      new: true,
+      runValidators: true,
     });
 
     if (!updatedExam) {
@@ -93,10 +106,8 @@ const updateExam = async (req, res) => {
       .status(200)
       .json({ message: "Exam updated successfully", exam: updatedExam });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while updating the exam" });
+    console.error("Error updating exam:", error);
+    res.status(500).json({ error: "Failed to update exam" });
   }
 };
 
