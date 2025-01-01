@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AddExamModel from "./AddExamModel";
+import { fetchExams, deleteExam } from "../utils";
 
 const AdminExams = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,19 +19,6 @@ const AdminExams = () => {
   const handleCloseModal = () => {
     setSelectedExam(null);
     setIsModalOpen(false);
-  };
-
-  const fetchExams = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:4000/api/exam/get-exams"
-      );
-      setExams(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError(err.response?.data?.error || "An error occurred");
-      setLoading(false);
-    }
   };
 
   const handleAddOrUpdateExam = (updatedExam) => {
@@ -50,16 +38,6 @@ const AdminExams = () => {
   useEffect(() => {
     fetchExams();
   }, []);
-
-  const deleteExam = async (id) => {
-    try {
-      await axios.delete(`http://localhost:4000/api/exam/delete-exam/${id}`);
-      alert("Exam deleted successfully!");
-      setExams((prevExams) => prevExams.filter((exam) => exam._id !== id));
-    } catch (err) {
-      setError(err.response?.data?.error || "An error occurred");
-    }
-  };
 
   return (
     <div className="flex h-screen">

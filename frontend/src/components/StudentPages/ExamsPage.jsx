@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { fetchExams } from "../utils";
+import axios from "axios";
 
 const ExamsPage = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [exams, setExams] = useState([]); // State to store exams
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,7 +34,19 @@ const ExamsPage = () => {
     };
 
     fetchUserDetails();
-  }, []);
+
+    // Fetch exams from the server
+    const loadExams = async () => {
+      try {
+        const examsData = await fetchExams();
+        setExams(examsData); // Set fetched exams to the state
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    loadExams();
+  }, [navigate]); // Added navigate as dependency to avoid warning
 
   const handleLogout = () => {
     localStorage.removeItem("userEmail");
@@ -53,7 +67,8 @@ const ExamsPage = () => {
       {/* Header */}
       <div className="bg-blue-900 text-white flex justify-between items-center px-6 py-4">
         <div className="text-lg font-medium">Welcome back, {user?.name} 👋</div>
-        <div className="text-sm">129 Exams Available</div>
+        <div className="text-sm">{exams.length} Exams Available</div>{" "}
+        {/* Display number of exams */}
         <div className="flex items-center space-x-4">
           <div className="text-sm">
             {new Date().toLocaleString("en-US", {
@@ -97,17 +112,28 @@ const ExamsPage = () => {
 
         {/* Courses List */}
         <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="flex justify-between items-center bg-white shadow-md rounded-lg p-4"
-            >
-              <div className="text-sm font-medium">
-                Internet and web technologies - IT2310
+          {exams.length === 0 ? (
+            <div>No exams available.</div>
+          ) : (
+            exams.map((exam) => (
+              <div
+                key={exam._id}
+                className="flex justify-between items-center bg-white shadow-md rounded-lg p-4"
+              >
+                <div className="text-sm font-medium">
+                  {exam.name} - {exam.module_code}
+                </div>
+                <div className="text-sm text-gray-500">{exam.duration}</div>
+                <div className="text-sm text-gray-500">{exam.module_code}</div>
+                <div className="text-sm text-gray-500">
+                  {exam.assigned_lecturer}
+                </div>
+                <div className="text-sm text-gray-500">
+                  {exam.no_of_questions} questions available
+                </div>
               </div>
-              <div className="text-sm text-gray-500">Web Dec 3 20:00</div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
