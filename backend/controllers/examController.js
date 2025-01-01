@@ -63,23 +63,17 @@ const getExams = async (req, res) => {
   }
 };
 
-// Delete an exam
 const deleteExam = async (req, res) => {
-  const { id } = req.query;
-
-  if (!id) {
-    return res.status(400).json({ error: "Exam ID is required" });
-  }
+  const { id } = req.params; // Get the exam ID from the URL
 
   try {
-    const deletedExam = await Exam.findOneAndDelete({ id });
+    const deletedExam = await Exam.findByIdAndDelete(id); // Delete the exam by ID
     if (!deletedExam) {
       return res.status(404).json({ error: "Exam not found" });
     }
     res.status(200).json({ message: "Exam deleted successfully" });
   } catch (error) {
-    console.error("Error deleting exam:", error);
-    res.status(500).json({ error: "Failed to delete exam" });
+    res.status(500).json({ error: error.message });
   }
 };
 

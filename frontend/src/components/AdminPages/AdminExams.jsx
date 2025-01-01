@@ -53,11 +53,7 @@ const AdminExams = () => {
 
   const deleteExam = async (id) => {
     try {
-      await axios.delete(
-        `http://localhost:4000/api/exam/delete-exam?name=${encodeURIComponent(
-          id
-        )}`
-      );
+      await axios.delete(`http://localhost:4000/api/exam/delete-exam/${id}`);
       alert("Exam deleted successfully!");
       setExams((prevExams) => prevExams.filter((exam) => exam._id !== id));
     } catch (err) {
